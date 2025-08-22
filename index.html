@@ -11,6 +11,15 @@
       height: 100%;
       overflow: hidden;
       font-family: sans-serif;
+      background: #ffffff;
+    }
+
+    /* Vanta injects a canvas with this class */
+    .vanta-canvas {
+      position: absolute !important;
+      inset: 0 !important;
+      z-index: 0 !important;          /* keep behind everything */
+      pointer-events: none !important; /* let clicks pass through */
     }
 
     .scene {
@@ -18,6 +27,7 @@
       width: 100vw;
       height: 100vh;
       perspective: 1200px;
+      z-index: 1; /* above vanta canvas */
     }
 
     .header-logo {
@@ -39,7 +49,8 @@
       height: 90vmin;
       max-width: 700px;
       max-height: 700px;
-      z-index: 2;
+      z-index: 2; /* above background */
+      pointer-events: auto;
     }
 
     .orbit-item {
@@ -56,13 +67,13 @@
       box-shadow: 0 0 10px #fff;
       transition: transform 0.2s ease;
       cursor: pointer;
-      z-index: 5;
+      z-index: 4;
       position: relative;
+      pointer-events: auto;
+      background: #fff; /* improves visibility for transparent JPGs */
     }
 
-    .orbit-item img:hover {
-      transform: scale(1.2);
-    }
+    .orbit-item img:hover { transform: scale(1.2); }
 
     .center-logo-3d {
       position: absolute;
@@ -75,8 +86,8 @@
       transform-style: preserve-3d;
       transform: translate(-50%, -50%) rotateY(0deg);
       animation: spin 10s linear infinite;
-      z-index: 3; /* above Vanta canvas and orbit container */
-      pointer-events: auto; /* enable clicking */
+      z-index: 3;             /* below orbit logos, above bg */
+      pointer-events: auto;   /* clickable */
       cursor: pointer;
     }
 
@@ -117,9 +128,7 @@
       z-index: 999;
     }
 
-    .modal h2 {
-      margin-top: 0;
-    }
+    .modal h2 { margin-top: 0; }
 
     .modal-close {
       position: absolute;
@@ -130,19 +139,9 @@
     }
 
     @media (max-width: 600px) {
-      .header-logo {
-        width: 130px;
-      }
-
-      .orbit-item img {
-        width: 10vw;
-        max-width: 38px;
-      }
-
-      .center-logo-3d {
-        width: 16vw;
-        height: 16vw;
-      }
+      .header-logo { width: 130px; }
+      .orbit-item img { width: 10vw; max-width: 38px; }
+      .center-logo-3d { width: 16vw; height: 16vw; }
     }
 
     footer {
@@ -153,7 +152,7 @@
       font-family: monospace;
       font-size: 14px;
       color: #333;
-      z-index: 3;
+      z-index: 2;
     }
   </style>
 </head>
@@ -187,12 +186,10 @@
     </p>
   </footer>
 
-  <!-- Vanta.js Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js"></script>
-
   <script>
-    // Vanta background
+    // Initialize Vanta Clouds background
     VANTA.CLOUDS({
       el: "#scene",
       mouseControls: true,
@@ -201,7 +198,7 @@
       minHeight: 200.00,
       minWidth: 200.00,
       backgroundColor: 0xffffff,
-      skyColor: 0x68b8d7,
+      skyColor: 0x68bbd7,
       cloudColor: 0xadc1de,
       cloudShadowColor: 0x183550,
       sunColor: 0xff9919,
@@ -209,133 +206,49 @@
       sunlightColor: 0xff9933,
       speed: 1.0
     });
+    // Belt & suspenders: ensure clicks pass through even if styles load late
+    document.querySelectorAll('.vanta-canvas').forEach(c => c.style.pointerEvents = 'none');
 
     const partners = [
       "0glabs", "crunchdao", "dfusion", "hyve", "irys", "labelledger",
-      "masa", "mizu", "pearai", "perle", "sapien", "turf", "vana", "zus"
+      "masa", "mizu", "pearai", "perle", "sapien", "turf", "vana", "zus",
+      "arkham", "cookbook", "covalent", "dapp", "gigabrain", "graph", "kite", "kaito",
+      "messari", "nansen", "spaceandtime", "uniq", "zeru", "javin"
     ];
 
     const infoData = {
-      sentient: {
-        title: "Sentient AGI",
-        description: "Sentient is building The GRID, an open-source AGI network allowing composable, interoperable, and monetizable AI agents and tools.",
-        links: {
-          x: "https://x.com/SentientAGI",
-          website: "https://sentient.foundation/"
-        }
-      },
-      crunchdao: {
-        title: "CrunchDAO",
-        description: "A decentralized collective of data scientists predicting financial markets.",
-        links: {
-          x: "https://x.com/crunchDAO",
-          website: "https://www.crunchdao.com/"
-        }
-      },
-      masa: {
-        title: "Masa",
-        description: "Decentralized AI identity and data verification for web3 & DePIN.",
-        links: {
-          x: "https://x.com/getmasafi",
-          website: "https://www.masa.ai/"
-        }
-      },
-      perle: {
-        title: "Perle Labs",
-        description: "Privacy-preserving reputation & compliance tooling for AI-native apps.",
-        links: {
-          x: "https://x.com/PerleLabs",
-          website: null
-        }
-      },
-      dfusion: {
-        title: "dFusion",
-        description: "Distributed AI compute and inference layer for open-source AGI.",
-        links: {
-          x: "https://x.com/dFusionAI",
-          website: "https://www.dfusion.ai/"
-        }
-      },
-      pearai: {
-        title: "PearAI",
-        description: "Train and sell AI agents using natural language prompts.",
-        links: {
-          x: "https://x.com/trypearai",
-          website: "https://trypear.ai/"
-        }
-      },
-      sapien: {
-        title: "Sapien",
-        description: "Social AI agents you can own and earn with.",
-        links: {
-          x: "https://x.com/JoinSapien",
-          website: "https://earn.sapien.io/"
-        }
-      },
-      labelledger: {
-        title: "LabelLedger",
-        description: "Provenance layer for AI datasets—on-chain licensing and tracking.",
-        links: {
-          x: "https://x.com/LabelLedger",
-          website: "https://labelledger.ai"
-        }
-      },
-      mizu: {
-        title: "Mizu",
-        description: "ZK-privacy protocols for AI and identity.",
-        links: {
-          x: "https://x.com/mizulabs",
-          website: "https://mizulabs.xyz/"
-        }
-      },
-      irys: {
-        title: "Irys",
-        description: "Permanent storage for AGI compute outputs.",
-        links: {
-          x: "https://x.com/irys_xyz",
-          website: "https://irys.xyz"
-        }
-      },
-      hyve: {
-        title: "Hyve",
-        description: "Decentralized agent orchestration layer.",
-        links: {
-          x: "https://x.com/Hyve_DA",
-          website: "https://hyveda.xyz/"
-        }
-      },
-      vana: {
-        title: "Vana",
-        description: "Own your data, fuel open AI.",
-        links: {
-          x: "https://x.com/vana",
-          website: "https://www.vana.org/"
-        }
-      },
-      turf: {
-        title: "Turf",
-        description: "Open-source compute coordination network for on-chain AGI.",
-        links: {
-          x: "https://x.com/turf_network",
-          website: "https://turf.network/"
-        }
-      },
-      zus: {
-        title: "Zus",
-        description: "Sovereign storage for AI agents & AGI workflows.",
-        links: {
-          x: "https://x.com/zus_network",
-          website: "https://www.vult.network/"
-        }
-      },
-      "0glabs": {
-        title: "0G Labs",
-        description: "Modular AI infrastructure & base layer for decentralized intelligence.",
-        links: {
-          x: "https://x.com/0G_labs",
-          website: "https://0g.ai/"
-        }
-      }
+      // Core
+      sentient: { title: "Sentient AGI", description: "Sentient is building The GRID, an open-source AGI network allowing composable, interoperable, and monetizable AI agents and tools.", links: { x: "https://x.com/SentientAGI", website: "https://sentient.foundation/" } },
+      // Original partners
+      crunchdao: { title: "CrunchDAO", description: "Decentralized collective of data scientists predicting markets.", links: { x: "https://x.com/crunchDAO", website: "https://www.crunchdao.com" } },
+      masa: { title: "Masa", description: "Decentralized AI identity & data network.", links: { x: "https://x.com/getmasafi", website: "https://www.masa.ai" } },
+      perle: { title: "Perle Labs", description: "Privacy-preserving reputation & compliance for AI-native apps.", links: { x: "https://x.com/PerleLabs", website: null } },
+      dfusion: { title: "dFusion", description: "Distributed AI compute & inference layer.", links: { x: "https://x.com/dFusionAI", website: "https://www.dfusion.ai" } },
+      pearai: { title: "PearAI", description: "Train and sell AI agents using natural language prompts.", links: { x: "https://x.com/trypearai", website: "https://trypear.ai" } },
+      sapien: { title: "Sapien", description: "Social AI agents you can own and earn with.", links: { x: "https://x.com/JoinSapien", website: "https://earn.sapien.io" } },
+      labelledger: { title: "LabelLedger", description: "Provenance & licensing for AI datasets.", links: { x: "https://x.com/LabelLedger", website: "https://labelledger.ai" } },
+      mizu: { title: "Mizu", description: "ZK privacy protocols for AI & identity.", links: { x: "https://x.com/mizulabs", website: "https://mizulabs.xyz" } },
+      irys: { title: "Irys", description: "Permanent storage for AGI compute outputs.", links: { x: "https://x.com/irys_xyz", website: "https://irys.xyz" } },
+      hyve: { title: "Hyve", description: "Decentralized agent orchestration layer.", links: { x: "https://x.com/Hyve_DA", website: "https://hyveda.xyz" } },
+      vana: { title: "Vana", description: "Own your data, fuel open AI.", links: { x: "https://x.com/vana", website: "https://www.vana.org" } },
+      turf: { title: "Turf", description: "Open-source compute coordination for on-chain AGI.", links: { x: "https://x.com/turf_network", website: "https://turf.network" } },
+      zus: { title: "Zus", description: "Sovereign storage for AI agents & workflows.", links: { x: "https://x.com/zus_network", website: "https://www.vult.network" } },
+      "0glabs": { title: "0G Labs", description: "Modular AI infrastructure & base layer.", links: { x: "https://x.com/0G_labs", website: "https://0g.ai" } },
+      // New partners
+      arkham: { title: "Arkham", description: "On-chain intelligence platform.", links: { x: "https://x.com/arkham", website: "https://arkm.com" } },
+      cookbook: { title: "Cookbook", description: "AI Cookbook for developers.", links: { x: "https://x.com/cookbook_dev", website: "https://ai.cookbook.dev" } },
+      covalent: { title: "Covalent", description: "Unified blockchain data API.", links: { x: "https://x.com/Covalent_HQ", website: "https://www.covalenthq.com" } },
+      dapp: { title: "DappLooker", description: "No-code blockchain analytics & dashboards.", links: { x: "https://x.com/DappLooker", website: "https://dapplooker.ai" } },
+      gigabrain: { title: "Gigabrain", description: "Crypto intelligence & alerts platform.", links: { x: "https://x.com/GigabrainGG", website: "https://gigabrain.gg" } },
+      graph: { title: "The Graph", description: "Decentralized indexing protocol for web3.", links: { x: "https://x.com/graphprotocol", website: "https://thegraph.com" } },
+      kite: { title: "Kite AI", description: "Agentic AI and compute testnet.", links: { x: "https://x.com/GoKiteAI", website: "https://testnet.gokite.ai" } },
+      kaito: { title: "Kaito", description: "AI search engine for crypto.", links: { x: "https://x.com/KaitoAI", website: null } },
+      messari: { title: "Messari", description: "Crypto market intelligence & research.", links: { x: "https://x.com/MessariCrypto", website: "https://messari.io" } },
+      nansen: { title: "Nansen", description: "On-chain analytics and wallet labeling.", links: { x: "https://x.com/nansen_ai", website: "https://points.nansen.ai" } },
+      spaceandtime: { title: "Space and Time", description: "Decentralized data warehouse for smart contracts & AI.", links: { x: "https://x.com/SpaceandTimeDB", website: "https://spaceandtime.io" } },
+      uniq: { title: "UniQAgent", description: "AI agent platform.", links: { x: "https://x.com/UniQAgent", website: null } },
+      zeru: { title: "Zeru", description: "AI-driven risk & credit scoring.", links: { x: "https://x.com/zerufinance", website: "https://www.myzscore.ai" } },
+      javin: { title: "Javin", description: "AI research assistant for crypto teams.", links: { x: "https://x.com/askjavin", website: "https://www.javin.ai" } }
     };
 
     const orbitContainer = document.getElementById("orbitContainer");
@@ -350,8 +263,15 @@
       item.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
 
       const img = document.createElement("img");
-      img.src = `assets/${name}.jpg`;
       img.alt = name;
+      // Prefer .JPG (as you saved), then try .jpg then .png
+      img.src = `assets/${name}.JPG`;
+      img.dataset.try = 'JPG';
+      img.onerror = function () {
+        if (this.dataset.try === 'JPG') { this.dataset.try = 'jpg'; this.src = `assets/${name}.jpg`; return; }
+        if (this.dataset.try === 'jpg') { this.dataset.try = 'png'; this.src = `assets/${name}.png`; return; }
+        this.onerror = null;
+      };
       img.onclick = () => openModal(name);
 
       item.appendChild(img);
@@ -364,8 +284,8 @@
       document.getElementById("modalTitle").textContent = data.title;
       document.getElementById("modalDescription").textContent = data.description;
 
-      const xLink = data.links?.x;
-      const webLink = data.links?.website;
+      const xLink = data.links && data.links.x;
+      const webLink = data.links && data.links.website;
 
       const linkHtml = [];
       if (xLink) linkHtml.push(`<a href="${xLink}" target="_blank"><img src='assets/xlogo.png' width='18' style='vertical-align:middle;'> X</a>`);
@@ -375,28 +295,20 @@
       document.getElementById("infoModal").style.display = "block";
     }
 
-    function closeModal() {
-      document.getElementById("infoModal").style.display = "none";
-    }
+    function closeModal() { document.getElementById("infoModal").style.display = "none"; }
 
+    // Drag rotate
     let isDragging = false, lastX, lastY, rotationX = 0, rotationY = 0;
     const updateRotation = (dx, dy) => {
       rotationY += dx * 0.4;
       rotationX -= dy * 0.4;
       orbitContainer.style.transform = `translate(-50%, -50%) rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
     };
-    document.getElementById("scene").addEventListener("mousedown", e => {
-      isDragging = true;
-      lastX = e.clientX;
-      lastY = e.clientY;
-    });
+    document.getElementById("scene").addEventListener("mousedown", e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; });
     window.addEventListener("mouseup", () => isDragging = false);
-    window.addEventListener("mousemove", e => {
-      if (!isDragging) return;
-      updateRotation(e.clientX - lastX, e.clientY - lastY);
-      lastX = e.clientX;
-      lastY = e.clientY;
-    });
+    window.addEventListener("mousemove", e => { if (!isDragging) return; updateRotation(e.clientX - lastX, e.clientY - lastY); lastX = e.clientX; lastY = e.clientY; });
   </script>
 </body>
 </html>
+
+
