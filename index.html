@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sentient GRID Ecosystem</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      perspective: 1200px;
+    }
+
+    .header-logo {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 160px;
+      z-index: 10;
+    }
+
+    .orb-container {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg);
+      transform-style: preserve-3d;
+      transition: transform 0.1s linear;
+      width: 90vmin;
+      height: 90vmin;
+      max-width: 700px;
+      max-height: 700px;
+      z-index: 2;
+    }
+
+    .orbit-item {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-style: preserve-3d;
+    }
+
+    .orbit-item img {
+      width: 8vw;
+      max-width: 52px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #fff;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+      z-index: 5;
+      position: relative;
+    }
+
+    .orbit-item img:hover {
+      transform: scale(1.2);
+    }
+
+    .center-logo-3d {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 14vw;
+      height: 14vw;
+      max-width: 90px;
+      max-height: 90px;
+      transform-style: preserve-3d;
+      transform: translate(-50%, -50%) rotateY(0deg);
+      animation: spin 10s linear infinite;
+      z-index: 3; /* above Vanta canvas and orbit container */
+      pointer-events: auto; /* enable clicking */
+      cursor: pointer;
+    }
+
+    .face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: url("assets/sentient.jpg");
+      background-size: cover;
+      border: 2px solid white;
+      pointer-events: none;
+    }
+
+    .front  { transform: translateZ(45px); }
+    .back   { transform: rotateY(180deg) translateZ(45px); }
+    .left   { transform: rotateY(-90deg) translateZ(45px); }
+    .right  { transform: rotateY(90deg) translateZ(45px); }
+    .top    { transform: rotateX(90deg) translateZ(45px); }
+    .bottom { transform: rotateX(-90deg) translateZ(45px); }
+
+    @keyframes spin {
+      from { transform: translate(-50%, -50%) rotateY(0deg); }
+      to   { transform: translate(-50%, -50%) rotateY(360deg); }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      max-width: 90vw;
+      font-family: monospace;
+      z-index: 999;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .header-logo {
+        width: 130px;
+      }
+
+      .orbit-item img {
+        width: 10vw;
+        max-width: 38px;
+      }
+
+      .center-logo-3d {
+        width: 16vw;
+        height: 16vw;
+      }
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-family: monospace;
+      font-size: 14px;
+      color: #333;
+      z-index: 3;
+    }
+  </style>
+</head>
+<body>
+  <img src="assets/sentientlogo.svg" alt="Sentient Logo" class="header-logo" />
+  <div class="scene" id="scene">
+    <div class="orb-container" id="orbitContainer">
+      <div class="center-logo-3d" onclick="openModal('sentient')">
+        <div class="face front"></div>
+        <div class="face back"></div>
+        <div class="face left"></div>
+        <div class="face right"></div>
+        <div class="face top"></div>
+        <div class="face bottom"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="infoModal">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle">Title</h2>
+    <p id="modalDescription">Description</p>
+    <div id="modalLink" style="margin-top: 12px; font-size: 14px;"></div>
+  </div>
+
+  <footer>
+    <p>
+      <a href="https://x.com/Diveaix" target="_blank">@Diveaix</a>
+      showing AGI love to
+      <a href="https://x.com/SentientAGI" target="_blank">@SentientAGI</a>
+    </p>
+  </footer>
+
+  <!-- Vanta.js Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js"></script>
+
+  <script>
+    // Vanta background
+    VANTA.CLOUDS({
+      el: "#scene",
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      backgroundColor: 0xffffff,
+      skyColor: 0x68b8d7,
+      cloudColor: 0xadc1de,
+      cloudShadowColor: 0x183550,
+      sunColor: 0xff9919,
+      sunGlareColor: 0xff6633,
+      sunlightColor: 0xff9933,
+      speed: 1.0
+    });
+
+    const partners = [
+      "0glabs", "crunchdao", "dfusion", "hyve", "irys", "labelledger",
+      "masa", "mizu", "pearai", "perle", "sapien", "turf", "vana", "zus"
+    ];
+
+    const infoData = {
+      sentient: {
+        title: "Sentient AGI",
+        description: "Sentient is building The GRID, an open-source AGI network allowing composable, interoperable, and monetizable AI agents and tools.",
+        links: {
+          x: "https://x.com/SentientAGI",
+          website: "https://sentient.foundation/"
+        }
+      },
+      crunchdao: {
+        title: "CrunchDAO",
+        description: "A decentralized collective of data scientists predicting financial markets.",
+        links: {
+          x: "https://x.com/crunchDAO",
+          website: "https://www.crunchdao.com/"
+        }
+      },
+      masa: {
+        title: "Masa",
+        description: "Decentralized AI identity and data verification for web3 & DePIN.",
+        links: {
+          x: "https://x.com/getmasafi",
+          website: "https://www.masa.ai/"
+        }
+      },
+      perle: {
+        title: "Perle Labs",
+        description: "Privacy-preserving reputation & compliance tooling for AI-native apps.",
+        links: {
+          x: "https://x.com/PerleLabs",
+          website: null
+        }
+      },
+      dfusion: {
+        title: "dFusion",
+        description: "Distributed AI compute and inference layer for open-source AGI.",
+        links: {
+          x: "https://x.com/dFusionAI",
+          website: "https://www.dfusion.ai/"
+        }
+      },
+      pearai: {
+        title: "PearAI",
+        description: "Train and sell AI agents using natural language prompts.",
+        links: {
+          x: "https://x.com/trypearai",
+          website: "https://trypear.ai/"
+        }
+      },
+      sapien: {
+        title: "Sapien",
+        description: "Social AI agents you can own and earn with.",
+        links: {
+          x: "https://x.com/JoinSapien",
+          website: "https://earn.sapien.io/"
+        }
+      },
+      labelledger: {
+        title: "LabelLedger",
+        description: "Provenance layer for AI datasets—on-chain licensing and tracking.",
+        links: {
+          x: "https://x.com/LabelLedger",
+          website: "https://labelledger.ai"
+        }
+      },
+      mizu: {
+        title: "Mizu",
+        description: "ZK-privacy protocols for AI and identity.",
+        links: {
+          x: "https://x.com/mizulabs",
+          website: "https://mizulabs.xyz/"
+        }
+      },
+      irys: {
+        title: "Irys",
+        description: "Permanent storage for AGI compute outputs.",
+        links: {
+          x: "https://x.com/irys_xyz",
+          website: "https://irys.xyz"
+        }
+      },
+      hyve: {
+        title: "Hyve",
+        description: "Decentralized agent orchestration layer.",
+        links: {
+          x: "https://x.com/Hyve_DA",
+          website: "https://hyveda.xyz/"
+        }
+      },
+      vana: {
+        title: "Vana",
+        description: "Own your data, fuel open AI.",
+        links: {
+          x: "https://x.com/vana",
+          website: "https://www.vana.org/"
+        }
+      },
+      turf: {
+        title: "Turf",
+        description: "Open-source compute coordination network for on-chain AGI.",
+        links: {
+          x: "https://x.com/turf_network",
+          website: "https://turf.network/"
+        }
+      },
+      zus: {
+        title: "Zus",
+        description: "Sovereign storage for AI agents & AGI workflows.",
+        links: {
+          x: "https://x.com/zus_network",
+          website: "https://www.vult.network/"
+        }
+      },
+      "0glabs": {
+        title: "0G Labs",
+        description: "Modular AI infrastructure & base layer for decentralized intelligence.",
+        links: {
+          x: "https://x.com/0G_labs",
+          website: "https://0g.ai/"
+        }
+      }
+    };
+
+    const orbitContainer = document.getElementById("orbitContainer");
+    const numItems = partners.length;
+    const screenWidth = window.innerWidth;
+    const radius = screenWidth < 600 ? 180 : 360;
+
+    partners.forEach((name, i) => {
+      const angle = (360 / numItems) * i;
+      const item = document.createElement("div");
+      item.className = "orbit-item";
+      item.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+
+      const img = document.createElement("img");
+      img.src = `assets/${name}.jpg`;
+      img.alt = name;
+      img.onclick = () => openModal(name);
+
+      item.appendChild(img);
+      orbitContainer.appendChild(item);
+    });
+
+    function openModal(id) {
+      const data = infoData[id];
+      if (!data) return;
+      document.getElementById("modalTitle").textContent = data.title;
+      document.getElementById("modalDescription").textContent = data.description;
+
+      const xLink = data.links?.x;
+      const webLink = data.links?.website;
+
+      const linkHtml = [];
+      if (xLink) linkHtml.push(`<a href="${xLink}" target="_blank"><img src='assets/xlogo.png' width='18' style='vertical-align:middle;'> X</a>`);
+      if (webLink) linkHtml.push(`<a href="${webLink}" target="_blank"><img src='assets/website.gif' width='16' style='vertical-align:middle;'> ${webLink.replace(/^https?:\/\//, '')}</a>`);
+
+      document.getElementById("modalLink").innerHTML = linkHtml.join(" &nbsp; | &nbsp; ");
+      document.getElementById("infoModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("infoModal").style.display = "none";
+    }
+
+    let isDragging = false, lastX, lastY, rotationX = 0, rotationY = 0;
+    const updateRotation = (dx, dy) => {
+      rotationY += dx * 0.4;
+      rotationX -= dy * 0.4;
+      orbitContainer.style.transform = `translate(-50%, -50%) rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+    };
+    document.getElementById("scene").addEventListener("mousedown", e => {
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+    window.addEventListener("mouseup", () => isDragging = false);
+    window.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      updateRotation(e.clientX - lastX, e.clientY - lastY);
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+  </script>
+</body>
+</html>
